@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube Live Status</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    .streamer { margin: 10px 0; padding: 15px; background: #fff; border-radius: 8px; }
+    .live { color: green; font-weight: bold; }
+    .offline { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h1>Streamer Status</h1>
+
+  <div id="streamers"></div>
+
+  <footer style="margin-top: 30px; font-size: 12px;">
+    Last Updated: <span id="last-updated"></span>
+  </footer>
+
+  <script>
+    // Your YouTube API key
+    const API_KEY = 'YOUR_YOUTUBE_API_KEY_HERE';
+
+    // List of channel IDs to check
+    const channels = [
+      {
+        name: "RowenYatesYT",
+        id: "YOUR_CHANNEL_ID_1",
+        link: "https://youtube.com/channel/YOUR_CHANNEL_ID_1/live"
+      },
+      {
+        name: "WickedYoda",
+        id: "YOUR_CHANNEL_ID_2",
+        link: "https://youtube.com/channel/YOUR_CHANNEL_ID_2/live"
+      }
+    ];
+
+    async function checkLiveStatus(channelId) {
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&type=video&eventType=live&key=${API_KEY}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      return data.items.length > 0;
+    }
+
+    async function updateStatuses() {
+      const container = document.getElementById('streamers');
+      container.innerHTML = '';
+
+      for (const channel of channels) {
+        const isLive = await checkLiveStatus(channel.id);
+
+        const div = document.createElement('div');
+        div.className = 'streamer';
+
+        div.innerHTML = `
+          <h2>${channel.name}</h2>
+          <p>Status: <span class="${isLive ? 'live' : 'offline'}">
+            ${isLive ? '🟢 Live Now!' : '🔴 Offline'}
+          </span></p>
+          <a href="${channel.link}" target="_blank">${isLive ? 'Watch Live' : 'Visit Channel'}</a>
+        `;
+
+        container.appendChild(div);
+      }
+
+      const now = new Date();
+      document.getElementById('last-updated').textContent = now.toLocaleString();
+    }
+
+    // Start checking
+    updateStatuses();
+    // Refresh every 5 minutes
+    setInterval(updateStatuses, 5 * 60 * 1000);
+  </script>
+
+</body>
+</html>
